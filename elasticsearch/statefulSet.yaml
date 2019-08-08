@@ -14,6 +14,8 @@ spec:
         app: elasticsearch
     spec:
       terminationGracePeriodSeconds: 10
+      securityContext:
+        fsGroup: 1000
       initContainers:
       - name: init-sysctl
         image: docker.elastic.co/elasticsearch/elasticsearch:6.6.2
