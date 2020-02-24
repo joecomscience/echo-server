@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: consul
+  namespace: tms
+  labels:
+    app: tms
+    component: consul
+spec:
+  selector:
+    matchLabels:
+      app: tms
+      component: consul
+  serviceName: "consul"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tms
+        component: consul
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: nodegroup
+                    operator: In
+                    values:
+                      - application
+      containers:
+        - name: consul
+          image: docker.io/consul:1.6.3
+          envFrom:
+            - configMapRef:
+                name: consul-config
+          ports:
+            - containerPort: 8500
+              name: http
+              protocol: TCP
+            - containerPort: 8400
+              name: rpc
+              protocol: TCP
+            - containerPort: 8301
+              name: serflan-tcp
+              protocol: TCP
+            - containerPort: 8301
+              name: serflan-udp
+              protocol: UDP
+            - containerPort: 8302
+              name: serfwan-tcp
+              protocol: TCP
+            - containerPort: 8302
+              name: serfwan-udp
+              protocol: UDP
+            - containerPort: 8300
+              name: server
+              protocol: TCP
+            - containerPort: 8600
+              name: consuldns-tcp
+              protocol: TCP
+            - containerPort: 8600
+              name: consuldns-udp
+              protocol: UDP
+          resources:
+            limits:
+              cpu: "200m"
+              memory: 512Mi
+            requests:
+              cpu: "200m"
+              memory: 256Mi
+          livenessProbe:
+            exec:
+              command:
+                - consul
+                - members
+                - -http-addr=http://127.0.0.1:8500
+            failureThreshold: 3
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: consul-data
+              mountPath: /consul/data
+  volumeClaimTemplates:
+    - metadata:
+        name: consul-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 1Gi

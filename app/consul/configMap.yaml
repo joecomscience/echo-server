@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: consul-config
+  namespace: tms
+data:
+  CONSUL_LOCAL_CONFIG: |
+    {
+      "datacenter": "development",
+      "node_name": "aycapsu03ts372",
+      "server": true,
+      "ui": true,
+      "bootstrap_expect": 1,
+      "client_addr": "0.0.0.0",
+      "acl": {
+        "enabled": true,
+        "default_policy": "deny",
+        "down_policy": "extend-cache",
+        "tokens": {
+          "master": "064c1452-613b-41ec-bce9-6c08bf9c865e"
+        }
+      }
+    }
